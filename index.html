@@ -1,0 +1,162 @@
+<!-- <!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画像読み込み君</title>
+</head>
+<body>
+    <h1>ウェブページの画像を取得</h1>
+    <p>
+        <input type="text" id="target_url" size="40" placeholder="取得したいサイトのURL">
+        <button onclick="loadImages()">画像を取得</button>
+    </p>
+    <iframe id="hidden_frame" style="display:none;"></iframe>
+    <div id="image_container">
+        <p>画像がここに表示されます。</p>
+    </div>
+
+    <script>
+        function loadImages() {
+            const url = document.getElementById("target_url").value;
+            if (!url) {
+                alert("URLを入力してください。");
+                return;
+            }
+
+            const iframe = document.getElementById("hidden_frame");
+            iframe.src = url;
+
+            iframe.onload = function () {
+                try {
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    const images = doc.querySelectorAll("img");
+
+                    const container = document.getElementById("image_container");
+                    container.innerHTML = ""; // コンテンツをリセット
+
+                    if (images.length === 0) {
+                        container.innerHTML = "<p>画像が見つかりませんでした。</p>";
+                        return;
+                    }
+
+                    images.forEach(img => {
+                        const imgElement = document.createElement("img");
+                        imgElement.src = new URL(img.src, url).href; // 絶対URLに変換
+                        imgElement.style.maxWidth = "300px";
+                        imgElement.style.margin = "5px";
+                        container.appendChild(imgElement);
+                    });
+
+                } catch (error) {
+                    console.error("エラー:", error);
+                    alert("このページは画像を取得できません（CORS制限またはX-Frame-Options）。");
+                }
+            };
+        }
+    </script>
+</body>
+</html> -->
+
+
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ウェブページのスクリーンショット</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        #screenshot-container {
+            margin-top: 20px;
+        }
+        iframe {
+            width: 90%;
+            height: 500px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+        }
+        img {
+            max-width: 90%;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>ウェブページのスクリーンショット取得</h1>
+    <p>
+        <input type="text" id="target_url" size="50" placeholder="スクリーンショットを撮るURLを入力">
+        <button onclick="loadPage()">ページを読み込む</button>
+        <button onclick="takeScreenshot()">スクリーンショットを撮る</button>
+    </p>
+
+    <iframe id="webpage_frame"></iframe>
+
+    <div id="screenshot-container">
+        <h2>スクリーンショット結果</h2>
+        <p>※画像を右クリックで保存できます</p>
+        <img id="screenshot_image" style="display: none;">
+    </div>
+
+    <script>
+        function loadPage() {
+            const url = document.getElementById("target_url").value;
+            if (!url) {
+                alert("URLを入力してください。");
+                return;
+            }
+            document.getElementById("webpage_frame").src = url;
+        }
+
+        async function takeScreenshot() {
+            const iframe = document.getElementById("webpage_frame");
+            if (!iframe.src) {
+                alert("先にページを読み込んでください。");
+                return;
+            }
+
+            try {
+                const iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+                
+                // Lazy Load 画像を読み込む
+                iframeDocument.querySelectorAll('img[loading="lazy"]').forEach(img => {
+                    img.loading = "eager";
+                });
+
+                await new Promise(resolve => setTimeout(resolve, 1000)); // 読み込み待機
+
+                // スクリーンショット取得
+                html2canvas(iframeDocument.body, {
+                    scale: 2, // 高解像度で取得
+                    useCORS: true
+                }).then(canvas => {
+                    const imgURL = canvas.toDataURL("image/png");
+                    document.getElementById("screenshot_image").src = imgURL;
+                    document.getElementById("screenshot_image").style.display = "block";
+
+                    // ダウンロード用リンクを作成
+                    const link = document.createElement("a");
+                    link.href = imgURL;
+                    link.download = "screenshot.png";
+                    link.textContent = "スクリーンショットをダウンロード";
+                    link.style.display = "block";
+                    document.getElementById("screenshot-container").appendChild(link);
+                });
+
+            } catch (error) {
+                console.error("スクリーンショットエラー:", error);
+                alert("スクリーンショットの取得に失敗しました。");
+            }
+        }
+    </script>
+
+</body>
+</html>
