@@ -1,4 +1,4 @@
-# Access-the-site-indirectly
+# Access-site-in-site
 
 ### URL
 [https://anomori.github.io/Access-the-site-indirectly/](https://anomori.github.io/Access-the-site-indirectly/)
